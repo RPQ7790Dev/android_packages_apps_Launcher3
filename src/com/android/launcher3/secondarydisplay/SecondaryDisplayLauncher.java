@@ -26,16 +26,19 @@ import android.app.WallpaperColors;
 import android.app.WallpaperManager;
 import android.app.WallpaperManager.OnColorsChangedListener;
 import android.content.Intent;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.view.Display;
+import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewAnimationUtils;
 import android.view.Window;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.UiThread;
@@ -85,8 +88,12 @@ public class SecondaryDisplayLauncher extends BaseActivity implements BgDataMode
     private SecondaryDragController mDragController;
     private ActivityAllAppsContainerView<SecondaryDisplayLauncher> mAppsView;
     private View mAppsButton;
+    private View mWorkspaceGrid;
+    private View mBottomSheetHandle;
+    private View mBottomSheetHandleArea;
 
     private boolean mAppDrawerShown = false;
+    private boolean mOnlyAppDrawer = false;
 
     private StringCache mStringCache;
     private SecondaryDisplayDelegate mSecondaryDisplayDelegate;
@@ -109,6 +116,7 @@ public class SecondaryDisplayLauncher extends BaseActivity implements BgDataMode
         mModel = LauncherAppState.getInstance(this).getModel();
         mDragController = new SecondaryDragController(this);
         mSecondaryDisplayDelegate = getActivityComponent().getSecondaryDisplayDelegate();
+        mOnlyAppDrawer = getResources().getBoolean(R.bool.config_secondaryLauncherOnlyAppDrawer);
 
         mDeviceProfile = InvariantDeviceProfile.INSTANCE.get(this)
                 .createDeviceProfileForSecondaryDisplay(this);
@@ -121,6 +129,20 @@ public class SecondaryDisplayLauncher extends BaseActivity implements BgDataMode
         mDragLayer = findViewById(R.id.drag_layer);
         mAppsView = findViewById(R.id.apps_view);
         mAppsButton = findViewById(R.id.all_apps_button);
+        mWorkspaceGrid = findViewById(R.id.workspace_grid);
+        mBottomSheetHandle = mAppsView.findViewById(R.id.bottom_sheet_handle);
+        mBottomSheetHandleArea = mAppsView.findViewById(R.id.bottom_sheet_handle_area);
+
+        if (mOnlyAppDrawer) {
+            mWorkspaceGrid.setVisibility(View.GONE);
+            mAppsButton.setVisibility(View.GONE);
+            ((FrameLayout.LayoutParams) mAppsView.getLayoutParams()).gravity = Gravity.CENTER;
+            mAppsView.setBackgroundColor(Color.TRANSPARENT);
+            mAppsView.setVisibility(View.VISIBLE);
+            mBottomSheetHandle.setVisibility(View.GONE);
+            mBottomSheetHandleArea.setVisibility(View.GONE);
+        }
+
         if (mSecondaryDisplayDelegate.enableTaskbarConnectedDisplays()) {
             mAppsButton.setVisibility(View.INVISIBLE);
         }
@@ -229,6 +251,10 @@ public class SecondaryDisplayLauncher extends BaseActivity implements BgDataMode
 
     public boolean isAppDrawerShown() {
         return mAppDrawerShown;
+    }
+
+    public boolean isOnlyAppDrawer() {
+        return mOnlyAppDrawer;
     }
 
     @Override

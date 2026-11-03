@@ -136,28 +136,35 @@ public class SecondaryDragLayer extends BaseDragLayer<SecondaryDisplayLauncher> 
         for (int i = 0; i < count; i++) {
             final View child = getChildAt(i);
             if (child == mAppsView) {
-                int horizontalPadding = (2 * grid.getWorkspaceProfile()
-                        .getDesiredWorkspaceHorizontalMarginPx())
-                        + grid.getWorkspaceProfile().getCellLayoutPaddingPx().left
-                        + grid.getWorkspaceProfile().getCellLayoutPaddingPx().right;
-                int verticalPadding =
-                        grid.getWorkspaceProfile().getCellLayoutPaddingPx().top
-                                + grid.getWorkspaceProfile().getCellLayoutPaddingPx().bottom;
+                if (mContainer.isOnlyAppDrawer()) {
+                    measureChildWithMargins(child, widthMeasureSpec, 0, heightMeasureSpec, 0);
+                } else {
+                    int horizontalPadding = (2 * grid.getWorkspaceProfile()
+                            .getDesiredWorkspaceHorizontalMarginPx())
+                            + grid.getWorkspaceProfile().getCellLayoutPaddingPx().left
+                            + grid.getWorkspaceProfile().getCellLayoutPaddingPx().right;
+                    int verticalPadding =
+                            grid.getWorkspaceProfile().getCellLayoutPaddingPx().top
+                                    + grid.getWorkspaceProfile().getCellLayoutPaddingPx().bottom;
 
-                int maxWidth =
-                        grid.getAllAppsProfile().getCellWidthPx()
-                                * grid.getAllAppsProfile().getNumShownAllAppsColumns()
-                                + horizontalPadding;
-                int appsWidth = Math.min(width - getPaddingLeft() - getPaddingRight(), maxWidth);
+                    int maxWidth =
+                            grid.getAllAppsProfile().getCellWidthPx()
+                                    * grid.getAllAppsProfile().getNumShownAllAppsColumns()
+                                    + horizontalPadding;
+                    int appsWidth = Math.min(
+                            width - getPaddingLeft() - getPaddingRight(), maxWidth);
 
-                int maxHeight =
-                        grid.getAllAppsProfile().getCellHeightPx()
-                                * grid.getAllAppsProfile().getNumShownAllAppsColumns()
-                                + verticalPadding;
-                int appsHeight = Math.min(height - getPaddingTop() - getPaddingBottom(), maxHeight);
+                    int maxHeight =
+                            grid.getAllAppsProfile().getCellHeightPx()
+                                    * grid.getAllAppsProfile().getNumShownAllAppsColumns()
+                                    + verticalPadding;
+                    int appsHeight = Math.min(
+                            height - getPaddingTop() - getPaddingBottom(), maxHeight);
 
-                mAppsView.measure(
-                        makeMeasureSpec(appsWidth, EXACTLY), makeMeasureSpec(appsHeight, EXACTLY));
+                    mAppsView.measure(
+                            makeMeasureSpec(appsWidth, EXACTLY),
+                            makeMeasureSpec(appsHeight, EXACTLY));
+                }
             } else if (child == mAllAppsButton) {
                 int appsButtonSpec = makeMeasureSpec(
                         grid.getWorkspaceProfile().getIconSizePx(), EXACTLY
@@ -261,7 +268,8 @@ public class SecondaryDragLayer extends BaseDragLayer<SecondaryDisplayLauncher> 
         List<SystemShortcut<?>> systemShortcuts = new ArrayList<>();
         systemShortcuts.add(APP_INFO.getShortcut(mContainer, item, v));
         // Hide redundant pin shortcut for app drawer icons if drag-n-drop is enabled.
-        if (!FeatureFlags.SECONDARY_DRAG_N_DROP_TO_PIN.get() || !mContainer.isAppDrawerShown()) {
+        if (!mContainer.isOnlyAppDrawer()
+                && (!FeatureFlags.SECONDARY_DRAG_N_DROP_TO_PIN.get() || !mContainer.isAppDrawerShown())) {
             systemShortcuts.add(mPinnedAppsAdapter.getSystemShortcut(item, v));
         }
         int deepShortcutCount = popupDataProvider.getShortcutCountForItem(item);
@@ -276,7 +284,9 @@ public class SecondaryDragLayer extends BaseDragLayer<SecondaryDisplayLauncher> 
                 systemShortcuts);
         container.requestFocus();
 
-        if (!FeatureFlags.SECONDARY_DRAG_N_DROP_TO_PIN.get() || !mContainer.isAppDrawerShown()) {
+        if (mContainer.isOnlyAppDrawer()
+                || !FeatureFlags.SECONDARY_DRAG_N_DROP_TO_PIN.get()
+                || !mContainer.isAppDrawerShown()) {
             return true;
         }
 
