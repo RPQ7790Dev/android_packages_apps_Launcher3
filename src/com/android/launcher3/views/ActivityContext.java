@@ -48,6 +48,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.AccessibilityDelegate;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -521,9 +522,14 @@ public interface ActivityContext extends SavedStateRegistryOwner {
         }
         ActivityOptions options =
                 allowBGLaunch(ActivityOptions.makeClipRevealAnimation(v, left, top, width, height));
-        options.setLaunchDisplayId(
-                (v != null && v.getDisplay() != null) ? v.getDisplay().getDisplayId()
-                        : Display.DEFAULT_DISPLAY);
+        int launchDisplayId = (v != null && v.getDisplay() != null)
+                ? v.getDisplay().getDisplayId()
+                : Display.DEFAULT_DISPLAY;
+        WindowManager wm = ((Context) this).getSystemService(WindowManager.class);
+        if (wm != null && !wm.shouldShowSystemDecors(launchDisplayId)) {
+            launchDisplayId = Display.DEFAULT_DISPLAY;
+        }
+        options.setLaunchDisplayId(launchDisplayId);
         RunnableList callback = new RunnableList();
         return new ActivityOptionsWrapper(options, callback);
     }
