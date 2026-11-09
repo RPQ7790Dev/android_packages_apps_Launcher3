@@ -25,6 +25,7 @@ import android.content.Context;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.WindowManager;
 import android.widget.GridView;
 
 import com.android.launcher3.AbstractFloatingView;
@@ -69,9 +70,10 @@ public class SecondaryDragLayer extends BaseDragLayer<SecondaryDisplayLauncher> 
     @Override
     public void recreateControllers() {
         super.recreateControllers();
-        TouchController statusBarController =
-            ApiWrapper.INSTANCE.get(getContext())
-                .createStatusBarTouchController(mContainer, () -> true);
+        TouchController statusBarController = shouldShowSystemDecors()
+                ? ApiWrapper.INSTANCE.get(getContext())
+                        .createStatusBarTouchController(mContainer, () -> true)
+                : null;
 
         if (statusBarController != null) {
             mControllers = new TouchController[]{
@@ -85,6 +87,11 @@ public class SecondaryDragLayer extends BaseDragLayer<SecondaryDisplayLauncher> 
                 mContainer.getDragController()
             };
         }
+    }
+
+    private boolean shouldShowSystemDecors() {
+        WindowManager wm = getContext().getSystemService(WindowManager.class);
+        return wm == null || wm.shouldShowSystemDecors(getContext().getDisplayId());
     }
 
     /**
