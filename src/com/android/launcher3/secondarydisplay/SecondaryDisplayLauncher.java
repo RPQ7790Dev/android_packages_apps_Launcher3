@@ -134,6 +134,7 @@ public class SecondaryDisplayLauncher extends BaseActivity implements BgDataMode
         mBottomSheetHandleArea = mAppsView.findViewById(R.id.bottom_sheet_handle_area);
 
         if (mOnlyAppDrawer) {
+            hideDecors(getWindow().getDecorView());
             mWorkspaceGrid.setVisibility(View.GONE);
             mAppsButton.setVisibility(View.GONE);
             ((FrameLayout.LayoutParams) mAppsView.getLayoutParams()).gravity = Gravity.CENTER;
@@ -184,6 +185,11 @@ public class SecondaryDisplayLauncher extends BaseActivity implements BgDataMode
             WindowCompat.getInsetsController(window, window.getDecorView())
                     .setAppearanceLightStatusBars(setLightBars);
         }
+    }
+
+    private void hideDecors(View decorView) {
+        int flags = View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY;
+        decorView.setSystemUiVisibility(flags);
     }
 
     @Override
